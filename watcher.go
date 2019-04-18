@@ -1,6 +1,6 @@
 // +build !plan9
 
-// Package filewatch provides a platform-independent filewatcher
+// Package fswatch provides a platform-independent filewatcher
 // which debounces events to avoid using files before they are entirly
 // written to disk
 package fswatch
