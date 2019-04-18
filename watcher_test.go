@@ -1,4 +1,4 @@
-package filewatch
+package fswatch
 
 import (
 	"os"

@@ -3,7 +3,7 @@
 // Package filewatch provides a platform-independent filewatcher
 // which debounces events to avoid using files before they are entirly
 // written to disk
-package filewatch
+package fswatch
 
 import (
 	"sync"
