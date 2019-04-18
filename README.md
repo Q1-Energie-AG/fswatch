@@ -9,7 +9,7 @@ until the writing is done.
 It uses **fsnotfiy** internally.
 
 ```console
-go get github.com/q1-energie-ag/fswatch
+go get github.com/Q1-Energie-AG/fswatch
 ```
 
 
