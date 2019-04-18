@@ -2,14 +2,14 @@
 [![GoDoc](https://godoc.org/github.com/q1-energie-ag/fswatch?status.svg)](https://godoc.org/github.com/q1-energie-ag/fswatch) [![Go Report Card](https://goreportcard.com/badge/github.com/q1-energie-ag/fswatch)](https://goreportcard.com/report/github.com/q1-energie-ag/fswatch)
 
 
-Filewatch is like fsnotfiy, but debounces the emitted events for better handling.
-E.g. when a (large) file is created, **filewatch** debounces the **Created** event
+**FSWatch** is like fsnotfiy, but debounces the emitted events for better handling.
+E.g. when a (large) file is created, **fswatch** debounces the **Created** event
 until the writing is done.
 
 It uses **fsnotfiy** internally.
 
 ```console
-go get github.com/q1-energie-ag/filewatch
+go get github.com/q1-energie-ag/fswatch
 ```
 
 
