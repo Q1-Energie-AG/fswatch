@@ -1,5 +1,5 @@
 # FSWatch
-[![GoDoc](https://godoc.org/github.com/q1-energie-ag/fswatch?status.svg)](https://godoc.org/github.com/q1-energie-ag/fswatch) [![Go Report Card](https://goreportcard.com/badge/github.com/q1-energie-ag/fswatch)](https://goreportcard.com/report/github.com/q1-energie-ag/fswatch)
+[![GoDoc](https://godoc.org/github.com/q1-energie-ag/fswatch?status.svg)](https://godoc.org/github.com/q1-energie-ag/fswatch) [![Go Report Card](https://goreportcard.com/badge/github.com/Q1-Energie-AG/fswatch)](https://goreportcard.com/report/github.com/Q1-Energie-AG/fswatch)
 
 
 **FSWatch** is like fsnotfiy, but debounces the emitted events for better handling.
