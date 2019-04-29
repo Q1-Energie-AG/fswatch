@@ -1,4 +1,4 @@
-module github.com/Q1-Energie-AG/fwatch
+module github.com/Q1-Energie-AG/fswatch
 
 go 1.12
 
