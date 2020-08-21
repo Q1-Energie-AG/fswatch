@@ -29,8 +29,6 @@ func teardown(t *testing.T) {
 }
 
 func getDebounceMapCount(w *Watcher) int {
-	w.debounceMapMu.Lock()
-	defer w.debounceMapMu.Unlock()
 	return len(w.debounceMap)
 }
 
