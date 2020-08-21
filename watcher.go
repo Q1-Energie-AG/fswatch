@@ -145,7 +145,7 @@ func (w *Watcher) debounceFile(event fsnotify.Event, ch chan fsnotify.Event) {
 	for {
 		select {
 		case newEvent := <-ch:
-			if event.Op&fsnotify.Remove == fsnotify.Remove {
+			if newEvent.Op&fsnotify.Remove == fsnotify.Remove {
 				// Remove this from the map
 				w.debounceMapMu.Lock()
 				delete(w.debounceMap, event.Name)
@@ -158,7 +158,7 @@ func (w *Watcher) debounceFile(event fsnotify.Event, ch chan fsnotify.Event) {
 				}
 
 				return
-			} else if event.Op&fsnotify.Rename == fsnotify.Rename {
+			} else if newEvent.Op&fsnotify.Rename == fsnotify.Rename {
 				w.debounceMapMu.Lock()
 				// Remove old debounce map entry
 				delete(w.debounceMap, event.Name)
