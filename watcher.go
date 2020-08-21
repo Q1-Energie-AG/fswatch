@@ -164,6 +164,7 @@ func (w *Watcher) debounceFile(event fsnotify.Event, ch chan fsnotify.Event) {
 				// new CREATE event for the renamed file
 				delete(w.debounceMap, event.Name)
 				w.debounceMapMu.Unlock()
+				return
 			}
 			continue
 		case <-time.After(w.debounceDuration):
