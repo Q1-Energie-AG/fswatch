@@ -30,7 +30,8 @@ type Watcher struct {
 	watcher          *fsnotify.Watcher
 	debounceDuration time.Duration
 
-	debounceMap map[string]chan fsnotify.Event
+	debounceMap   map[string]chan fsnotify.Event
+	debounceMapMu sync.Mutex
 
 	// Events is the channel on which all events are published
 	Events chan fsnotify.Event
@@ -111,6 +112,7 @@ func (w *Watcher) handleEvent(event fsnotify.Event) {
 	// Handle write or create event
 	if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create {
 		// Check if file is already being debounced
+		w.debounceMapMu.Lock()
 		ch, ok := w.debounceMap[event.Name]
 		if !ok {
 			// If not, add it to the debounce map
@@ -118,14 +120,17 @@ func (w *Watcher) handleEvent(event fsnotify.Event) {
 			w.debounceMap[event.Name] = ch
 
 			// Start the debounce handler
-			w.debounceFile(event, ch)
+			go w.debounceFile(event, ch)
 		} else {
 			// Publish the event to the channel of the
 			// debounce handler
 			ch <- event
 		}
+		w.debounceMapMu.Unlock()
 	} else {
+		w.debounceMapMu.Lock()
 		ch, ok := w.debounceMap[event.Name]
+		w.debounceMapMu.Unlock()
 		if ok {
 			// Debounce the event
 			ch <- event
@@ -142,7 +147,9 @@ func (w *Watcher) debounceFile(event fsnotify.Event, ch chan fsnotify.Event) {
 		case newEvent := <-ch:
 			if newEvent.Op&fsnotify.Remove == fsnotify.Remove {
 				// Remove this from the map
+				w.debounceMapMu.Lock()
 				delete(w.debounceMap, event.Name)
+				w.debounceMapMu.Unlock()
 
 				if !w.IgnoreTemporaryFiles {
 					// if temporary files are not ignored
@@ -152,14 +159,18 @@ func (w *Watcher) debounceFile(event fsnotify.Event, ch chan fsnotify.Event) {
 
 				return
 			} else if newEvent.Op&fsnotify.Rename == fsnotify.Rename {
+				w.debounceMapMu.Lock()
 				// Remove old debounce map entry because rename triggers a
 				// new CREATE event for the renamed file
 				delete(w.debounceMap, event.Name)
+				w.debounceMapMu.Unlock()
 			}
 			continue
 		case <-time.After(w.debounceDuration):
 			// Remove this from the map
+			w.debounceMapMu.Lock()
 			delete(w.debounceMap, event.Name)
+			w.debounceMapMu.Unlock()
 			// Emit event
 			w.Events <- event
 			return
