@@ -116,7 +116,7 @@ func (w *Watcher) handleEvent(event fsnotify.Event) {
 		ch, ok := w.debounceMap[event.Name]
 		if !ok {
 			// If not, add it to the debounce map
-			ch := make(chan fsnotify.Event)
+			ch := make(chan fsnotify.Event, 10)
 			w.debounceMap[event.Name] = ch
 
 			// Start the debounce handler
@@ -164,6 +164,7 @@ func (w *Watcher) debounceFile(event fsnotify.Event, ch chan fsnotify.Event) {
 				// new CREATE event for the renamed file
 				delete(w.debounceMap, event.Name)
 				w.debounceMapMu.Unlock()
+
 				return
 			}
 			continue
