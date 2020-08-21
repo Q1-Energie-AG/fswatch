@@ -160,18 +160,9 @@ func (w *Watcher) debounceFile(event fsnotify.Event, ch chan fsnotify.Event) {
 				return
 			} else if newEvent.Op&fsnotify.Rename == fsnotify.Rename {
 				w.debounceMapMu.Lock()
-				// Remove old debounce map entry
+				// Remove old debounce map entry because rename triggers a
+				// new CREATE event for the renamed file
 				delete(w.debounceMap, event.Name)
-				// Add the new filename to the debounce map
-				w.debounceMap[newEvent.Name] = ch
-
-				if event.Op&fsnotify.Create == fsnotify.Create {
-					// Keep CREATE event but change the filename
-					event.Name = newEvent.Name
-				} else {
-					// Make RENAME event the new event to publish
-					event = newEvent
-				}
 				w.debounceMapMu.Unlock()
 			}
 			continue
