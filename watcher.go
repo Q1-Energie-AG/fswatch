@@ -9,13 +9,15 @@ import (
 	"sync"
 	"time"
 
-	"gopkg.in/fsnotify.v1"
+	"github.com/fsnotify/fsnotify"
 )
+
+const channelBufferSize = 10
 
 // Watcher is a debounced filewatcher
 // If a CREATE / WRITE happens it waits for {debounceDuration}
 // to publish the event and resets the {debounceDuration} when
-// a new WRITE event is created for the file
+// a new WRITE event is created for the file.
 type Watcher struct {
 	// IgnoreTemporaryFiles indicates if files which
 	// are CREATEd and DELETEd during the debounce duration are ignored
@@ -40,7 +42,7 @@ type Watcher struct {
 	Errors chan error
 }
 
-// NewWatcher creates a new watcher with the specified debounceDuration
+// NewWatcher creates a new watcher with the specified debounceDuration.
 func NewWatcher(debounceDuration time.Duration) (*Watcher, error) {
 	// Create underlying fsnotify watcher
 	watcher, err := fsnotify.NewWatcher()
@@ -66,12 +68,12 @@ func NewWatcher(debounceDuration time.Duration) (*Watcher, error) {
 	return debouncedWatcher, nil
 }
 
-// Add adds a new path to the watcher
+// Add adds a new path to the watcher.
 func (w *Watcher) Add(name string) error {
 	return w.watcher.Add(name)
 }
 
-// Close closes the watcher
+// Close closes the watcher.
 func (w *Watcher) Close() error {
 	// Close channel to quit debounce loop
 	w.closeMu.Lock()
@@ -80,16 +82,17 @@ func (w *Watcher) Close() error {
 		w.isClosed = true
 	}
 	w.closeMu.Unlock()
+
 	return w.watcher.Close()
 }
 
-// Remove removes a path from the watcher
+// Remove removes a path from the watcher.
 func (w *Watcher) Remove(name string) error {
 	return w.watcher.Remove(name)
 }
 
 // debounceLoop receives all fsnotify events
-// and handles them accordingly
+// and handles them accordingly.
 func (w *Watcher) debounceLoop() {
 	for {
 		select {
@@ -106,17 +109,17 @@ func (w *Watcher) debounceLoop() {
 	}
 }
 
-// handleEvent handles incoming fsnotify events
+// handleEvent handles incoming fsnotify events.
 func (w *Watcher) handleEvent(event fsnotify.Event) {
-
 	// Handle write or create event
-	if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create {
+	if isWrite(event) || isCreate(event) {
 		// Check if file is already being debounced
 		w.debounceMapMu.Lock()
 		ch, ok := w.debounceMap[event.Name]
+
 		if !ok {
 			// If not, add it to the debounce map
-			ch := make(chan fsnotify.Event, 10)
+			ch := make(chan fsnotify.Event, channelBufferSize)
 			w.debounceMap[event.Name] = ch
 
 			// Start the debounce handler
@@ -126,6 +129,7 @@ func (w *Watcher) handleEvent(event fsnotify.Event) {
 			// debounce handler
 			ch <- event
 		}
+
 		w.debounceMapMu.Unlock()
 	} else {
 		w.debounceMapMu.Lock()
@@ -167,7 +171,9 @@ func (w *Watcher) debounceFile(event fsnotify.Event, ch chan fsnotify.Event) {
 
 				return
 			}
+
 			continue
+
 		case <-time.After(w.debounceDuration):
 			// Remove this from the map
 			w.debounceMapMu.Lock()
@@ -175,7 +181,16 @@ func (w *Watcher) debounceFile(event fsnotify.Event, ch chan fsnotify.Event) {
 			w.debounceMapMu.Unlock()
 			// Emit event
 			w.Events <- event
+
 			return
 		}
 	}
+}
+
+func isWrite(event fsnotify.Event) bool {
+	return event.Op&fsnotify.Write == fsnotify.Write
+}
+
+func isCreate(event fsnotify.Event) bool {
+	return event.Op&fsnotify.Create == fsnotify.Create
 }
