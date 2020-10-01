@@ -10,7 +10,7 @@ import (
 
 const TestfolderPath = "./testfolder"
 
-// setup assures that the testing directory exists and is empty
+// setup assures that the testing directory exists and is empty.
 func setup(t *testing.T) {
 	if _, err := os.Stat(TestfolderPath); os.IsExist(err) {
 		err := os.RemoveAll(TestfolderPath)
@@ -19,10 +19,9 @@ func setup(t *testing.T) {
 
 	err := os.Mkdir(TestfolderPath, os.ModePerm)
 	assert.Nil(t, err)
-
 }
 
-// teardown deletes the testing directory after the tests
+// teardown deletes the testing directory after the tests.
 func teardown(t *testing.T) {
 	err := os.RemoveAll(TestfolderPath)
 	assert.Nil(t, err)
@@ -33,7 +32,6 @@ func getDebounceMapCount(w *Watcher) int {
 }
 
 func TestWatcher(t *testing.T) {
-
 	// Setup + Teardown
 	setup(t)
 	defer teardown(t)
@@ -74,5 +72,4 @@ func TestWatcher(t *testing.T) {
 
 	err = w.Close()
 	assert.Nil(t, err)
-
 }
